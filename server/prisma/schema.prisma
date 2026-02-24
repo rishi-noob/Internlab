@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String       @id @default(uuid())
+  email     String       @unique
+  name      String
+  password  String
+  role      String       @default("INTERN")
+  phone     String?
+  college   String?
+  duration  Int?
+  interests String?
+  createdAt DateTime     @default(now())
+
+  Enrollment       Enrollment[]
+  CreatedTasks     Task[]       @relation("TaskCreator")
+  CreatedPrograms  Program[]    @relation("ProgramCreator")
+  CreatedResources Resource[]   @relation("ResourceCreator")
+  CreatedInvites   InviteCode[] @relation("InviteCreator")
+}
+
+model Program {
+  id           String       @id @default(uuid())
+  title        String
+  description  String?
+  domain       String?
+  durationDays Int
+  startDate    DateTime
+  endDate      DateTime
+
+  createdById  String
+  createdBy    User         @relation("ProgramCreator", fields: [createdById], references: [id])
+
+  Enrollment   Enrollment[]
+  Task         Task[]
+  InviteCode   InviteCode[]
+}
+
+model Task {
+  id          String       @id @default(uuid())
+  title       String
+  description String?
+  type        String
+  contentUrl  String?
+  mandatory   Boolean      @default(true)
+  deadline    DateTime?
+  orderIndex  Int          @default(0)
+
+  programId   String
+  program     Program      @relation(fields: [programId], references: [id])
+
+  createdById String
+  createdBy   User         @relation("TaskCreator", fields: [createdById], references: [id])
+
+  UserProgress UserProgress[]
+}
+
+model Enrollment {
+  id             String       @id @default(uuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+
+  programId      String
+  program        Program      @relation(fields: [programId], references: [id])
+
+  status         String       @default("ACTIVE")
+  enrolledAt     DateTime     @default(now())
+  expiresAt      DateTime
+  certificateUrl String?
+
+  UserProgress   UserProgress[]
+}
+
+model UserProgress {
+  id            String       @id @default(uuid())
+  enrollmentId  String
+  enrollment    Enrollment   @relation(fields: [enrollmentId], references: [id])
+
+  taskId        String
+  task          Task         @relation(fields: [taskId], references: [id])
+
+  status        String       @default("NOT_STARTED")
+  completedAt   DateTime?
+  grade         String?
+  submissionUrl String?
+}
+
+model Resource {
+  id          String   @id @default(uuid())
+  title       String
+  url         String
+  description String?
+  category    String?
+  createdById String
+  createdBy   User     @relation("ResourceCreator", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model InviteCode {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  programId   String
+  program     Program  @relation(fields: [programId], references: [id])
+  createdById String
+  createdBy   User     @relation("InviteCreator", fields: [createdById], references: [id])
+  expiresAt   DateTime
+  used        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
