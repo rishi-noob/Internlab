@@ -1,7 +1,7 @@
 const API_BASE =
     import.meta.env.VITE_API_URL ||
     // Fallback for deployed frontend if env var is missing
-    (typeof window !== 'undefined' && window.location.hostname === 'internlabtoe.vercel.app'
+    (typeof window !== 'undefined' && (window.location.hostname.endsWith('vercel.app') || window.location.hostname.endsWith('netlify.app'))
         ? 'https://intern-lab-server1.onrender.com/api'
         : '/api');
 
