@@ -9,31 +9,25 @@ async function seedAdmin() {
     const name = 'Admin';
 
     try {
-        // Check if admin already exists
-        const existing = await prisma.user.findUnique({ where: { email } });
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
-        if (existing) {
-            // Update role to ADMIN if not already
-            await prisma.user.update({
-                where: { email },
-                data: { role: 'ADMIN' },
-            });
-            console.log(`✅ User "${email}" updated to ADMIN role.`);
-        } else {
-            // Create new admin
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash(password, salt);
+        await prisma.user.upsert({
+            where: { email },
+            update: {
+                name,
+                role: 'ADMIN',
+                password: hashedPassword,
+            },
+            create: {
+                name,
+                email,
+                password: hashedPassword,
+                role: 'ADMIN',
+            },
+        });
 
-            await prisma.user.create({
-                data: {
-                    name,
-                    email,
-                    password: hashedPassword,
-                    role: 'ADMIN',
-                },
-            });
-            console.log(`✅ Admin account created: ${email} / ${password}`);
-        }
+        console.log(`✅ Admin account ensured: ${email} / ${password}`);
     } catch (error) {
         console.error('❌ Seed failed:', error.message);
     } finally {
