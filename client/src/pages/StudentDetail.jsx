@@ -98,10 +98,24 @@ export default function StudentDetail() {
                 ) : (
                     <div className="enrollment-detail-list">
                         {student.Enrollment.map(enr => {
-                            const tasks = enr.UserProgress || [];
-                            const completedCount = tasks.filter(t => t.status === 'COMPLETED').length;
-                            const inProgressCount = tasks.filter(t => t.status === 'IN_PROGRESS').length;
-                            const totalTasks = tasks.length;
+                            // Build a map from taskId -> UserProgress record
+                            const progressMap = {};
+                            (enr.UserProgress || []).forEach(p => {
+                                progressMap[p.taskId] = p;
+                            });
+
+                            // Use the FULL task list from the program (includes tasks added after enrollment)
+                            const allTasks = enr.program?.Task || [];
+                            const totalTasks = allTasks.length;
+
+                            // Merge each task with its progress (or default to NOT_STARTED)
+                            const tasksWithProgress = allTasks.map(task => ({
+                                ...task,
+                                progress: progressMap[task.id] || { status: 'NOT_STARTED' }
+                            }));
+
+                            const completedCount = tasksWithProgress.filter(t => t.progress.status === 'COMPLETED').length;
+                            const inProgressCount = tasksWithProgress.filter(t => t.progress.status === 'IN_PROGRESS').length;
                             const pct = totalTasks === 0 ? 0 : Math.round((completedCount / totalTasks) * 100);
 
                             return (
@@ -134,20 +148,26 @@ export default function StudentDetail() {
                                     {/* Task list */}
                                     {totalTasks > 0 && (
                                         <div className="student-task-list">
-                                            {tasks
-                                                .sort((a, b) => (a.task?.orderIndex || 0) - (b.task?.orderIndex || 0))
-                                                .map(tp => (
-                                                    <div key={tp.id} className="student-task-row">
-                                                        <div className={`task-status-dot ${tp.status.toLowerCase().replace('_', '-')}`} />
+                                            {tasksWithProgress.map(t => {
+                                                const status = t.progress.status;
+                                                return (
+                                                    <div key={t.id} className="student-task-row">
+                                                        <div className={`task-status-dot ${status.toLowerCase().replace('_', '-')}`} />
                                                         <div className="task-info">
-                                                            <span className="task-title">{tp.task?.title}</span>
-                                                            <span className="task-type">{tp.task?.type}</span>
+                                                            <span className="task-title">{t.title}</span>
+                                                            <span className="task-type">{t.type}</span>
+                                                            {t.progress.submissionUrl && (
+                                                                <a href={t.progress.submissionUrl} target="_blank" rel="noopener noreferrer" className="submission-link-inline">
+                                                                    📎 View Submission
+                                                                </a>
+                                                            )}
                                                         </div>
-                                                        <span className={`task-status-badge ${tp.status.toLowerCase().replace('_', '-')}`}>
-                                                            {tp.status.replace('_', ' ')}
+                                                        <span className={`task-status-badge ${status.toLowerCase().replace('_', '-')}`}>
+                                                            {status.replace('_', ' ')}
                                                         </span>
                                                     </div>
-                                                ))}
+                                                );
+                                            })}
                                         </div>
                                     )}
                                 </div>

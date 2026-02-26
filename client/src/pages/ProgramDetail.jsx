@@ -13,6 +13,8 @@ export default function ProgramDetail() {
     const [showTaskModal, setShowTaskModal] = useState(false);
     const [inviteToken, setInviteToken] = useState('');
     const [taskForm, setTaskForm] = useState({ title: '', description: '', type: 'READING', contentUrl: '', mandatory: true, orderIndex: 0 });
+    const [submissionUrls, setSubmissionUrls] = useState({});
+    const [submitting, setSubmitting] = useState({});
 
     useEffect(() => { loadProgram(); }, [id]);
 
@@ -29,6 +31,14 @@ export default function ProgramDetail() {
                     setEnrollment(matching);
                     const prog = await api.getProgress(matching.id);
                     setProgress(prog);
+                    // Pre-fill any existing submission URLs
+                    const urls = {};
+                    prog.tasks?.forEach(t => {
+                        if (t.progress?.submissionUrl) {
+                            urls[t.id] = t.progress.submissionUrl;
+                        }
+                    });
+                    setSubmissionUrls(urls);
                 }
             }
         } catch (e) { console.error(e); }
@@ -46,9 +56,23 @@ export default function ProgramDetail() {
 
     const handleMarkComplete = async (taskId) => {
         try {
-            await api.markComplete(taskId);
+            await api.markComplete(taskId, submissionUrls[taskId] || undefined);
             loadProgram();
         } catch (err) { alert(err.message || 'Failed to mark complete'); }
+    };
+
+    const handleSubmitWork = async (taskId) => {
+        const url = submissionUrls[taskId];
+        if (!url || !url.trim()) return;
+        setSubmitting(prev => ({ ...prev, [taskId]: true }));
+        try {
+            await api.submitWork(taskId, url.trim());
+            loadProgram();
+        } catch (err) {
+            alert(err.message || 'Failed to submit work');
+        } finally {
+            setSubmitting(prev => ({ ...prev, [taskId]: false }));
+        }
     };
 
     const handleGenerateInvite = async () => {
@@ -131,26 +155,62 @@ export default function ProgramDetail() {
                         {tasks.map(task => {
                             const taskProgress = progress?.tasks?.find(t => t.id === task.id)?.progress;
                             const isCompleted = taskProgress?.status === 'COMPLETED';
+                            const isAssignment = task.type === 'QUIZ';
+                            const existingUrl = taskProgress?.submissionUrl;
                             return (
-                                <div key={task.id} className="task-item">
-                                    {user.role === 'INTERN' && enrollment && (
-                                        <div
-                                            className={`task-check ${isCompleted ? 'completed' : ''}`}
-                                            onClick={() => !isCompleted && handleMarkComplete(task.id)}
-                                        />
-                                    )}
-                                    <div className="task-info">
-                                        <div className="task-title">{task.title}</div>
-                                        <div className="task-type">{task.type}{task.contentUrl && ' • 🔗 Resource'}</div>
-                                        {task.description && <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>{task.description}</p>}
+                                <div key={task.id} className="task-item-wrap">
+                                    <div className="task-item">
+                                        {user.role === 'INTERN' && enrollment && (
+                                            <div
+                                                className={`task-check ${isCompleted ? 'completed' : ''}`}
+                                                onClick={() => !isCompleted && handleMarkComplete(task.id)}
+                                            />
+                                        )}
+                                        <div className="task-info">
+                                            <div className="task-title">{task.title}</div>
+                                            <div className="task-type">{task.type}{task.contentUrl && ' • 🔗 Resource'}</div>
+                                            {task.description && <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>{task.description}</p>}
+                                        </div>
+                                        {task.contentUrl && (
+                                            <a href={task.contentUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm" onClick={e => e.stopPropagation()}>
+                                                Open ↗
+                                            </a>
+                                        )}
+                                        {canManage && (
+                                            <button className="btn btn-danger btn-sm" onClick={() => handleDeleteTask(task.id)}>×</button>
+                                        )}
                                     </div>
-                                    {task.contentUrl && (
-                                        <a href={task.contentUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm" onClick={e => e.stopPropagation()}>
-                                            Open ↗
-                                        </a>
-                                    )}
-                                    {canManage && (
-                                        <button className="btn btn-danger btn-sm" onClick={() => handleDeleteTask(task.id)}>×</button>
+
+                                    {/* Submission area for assignment/quiz tasks — visible to enrolled interns */}
+                                    {isAssignment && user.role === 'INTERN' && enrollment && (
+                                        <div className="submission-area">
+                                            {existingUrl && (
+                                                <div className="submission-existing">
+                                                    <span className="submission-label">📎 Submitted:</span>
+                                                    <a href={existingUrl} target="_blank" rel="noopener noreferrer" className="submission-link">
+                                                        {existingUrl.length > 50 ? existingUrl.substring(0, 50) + '...' : existingUrl}
+                                                    </a>
+                                                </div>
+                                            )}
+                                            {!isCompleted && (
+                                                <div className="submission-input-row">
+                                                    <input
+                                                        type="url"
+                                                        placeholder="Paste your submission link (Google Docs, GitHub, etc.)"
+                                                        value={submissionUrls[task.id] || ''}
+                                                        onChange={e => setSubmissionUrls(prev => ({ ...prev, [task.id]: e.target.value }))}
+                                                        className="submission-input"
+                                                    />
+                                                    <button
+                                                        className="btn btn-primary btn-sm"
+                                                        onClick={() => handleSubmitWork(task.id)}
+                                                        disabled={!submissionUrls[task.id]?.trim() || submitting[task.id]}
+                                                    >
+                                                        {submitting[task.id] ? 'Saving...' : existingUrl ? 'Update' : 'Submit'}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                             );

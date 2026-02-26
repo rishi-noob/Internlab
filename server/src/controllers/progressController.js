@@ -142,6 +142,56 @@ const gradeSubmission = async (req, res) => {
     }
 };
 
+// @desc    Submit work link for a task (without marking complete)
+// @route   POST /api/progress/:taskId/submit
+// @access  Private (Intern)
+const submitWork = async (req, res) => {
+    try {
+        const { taskId } = req.params;
+        const { submissionUrl } = req.body;
+
+        if (!submissionUrl || !submissionUrl.trim()) {
+            return res.status(400).json({ message: 'Submission URL is required' });
+        }
+
+        const task = await prisma.task.findUnique({ where: { id: taskId } });
+        if (!task) return res.status(404).json({ message: 'Task not found' });
+
+        const enrollment = await prisma.enrollment.findFirst({
+            where: { userId: req.user.id, programId: task.programId }
+        });
+        if (!enrollment) return res.status(403).json({ message: 'Not enrolled in this program' });
+
+        let progress = await prisma.userProgress.findFirst({
+            where: { enrollmentId: enrollment.id, taskId }
+        });
+
+        if (!progress) {
+            progress = await prisma.userProgress.create({
+                data: {
+                    enrollmentId: enrollment.id,
+                    taskId,
+                    status: 'IN_PROGRESS',
+                    submissionUrl: submissionUrl.trim(),
+                }
+            });
+        } else {
+            progress = await prisma.userProgress.update({
+                where: { id: progress.id },
+                data: {
+                    submissionUrl: submissionUrl.trim(),
+                    status: progress.status === 'NOT_STARTED' ? 'IN_PROGRESS' : progress.status,
+                }
+            });
+        }
+
+        res.json({ message: 'Work submitted successfully', progress });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error submitting work' });
+    }
+};
+
 // @desc    Get aggregate progress stats
 // @route   GET /api/progress/stats
 // @access  Private/Admin
@@ -173,5 +223,6 @@ module.exports = {
     markTaskComplete,
     getEnrollmentProgress,
     gradeSubmission,
-    getProgressStats
+    getProgressStats,
+    submitWork
 };

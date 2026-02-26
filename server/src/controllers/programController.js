@@ -6,7 +6,13 @@ const prisma = require('../config/db');
 // @access  Private
 const getPrograms = async (req, res) => {
     try {
+        // Interns only see programs they are enrolled in
+        const where = req.user.role === 'INTERN'
+            ? { Enrollment: { some: { userId: req.user.id } } }
+            : {};
+
         const programs = await prisma.program.findMany({
+            where,
             include: {
                 _count: {
                     select: { Enrollment: true, Task: true }
@@ -36,6 +42,17 @@ const getProgramById = async (req, res) => {
         if (!program) {
             return res.status(404).json({ message: 'Program not found' });
         }
+
+        // Interns can only view programs they are enrolled in
+        if (req.user.role === 'INTERN') {
+            const enrollment = await prisma.enrollment.findFirst({
+                where: { userId: req.user.id, programId: program.id }
+            });
+            if (!enrollment) {
+                return res.status(403).json({ message: 'You are not enrolled in this program' });
+            }
+        }
+
         res.json(program);
     } catch (error) {
         console.error(error);

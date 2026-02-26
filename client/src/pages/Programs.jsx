@@ -54,8 +54,10 @@ export default function Programs() {
             {programs.length === 0 ? (
                 <div className="empty-state fade-in-up">
                     <div className="icon">🎓</div>
-                    <h3>No programs yet</h3>
-                    <p>Create your first internship program to get started</p>
+                    <h3>{user.role === 'INTERN' ? 'No enrolled programs' : 'No programs yet'}</h3>
+                    <p>{user.role === 'INTERN'
+                        ? 'Use an invite code on the Dashboard to join a program'
+                        : 'Create your first internship program to get started'}</p>
                 </div>
             ) : (
                 <div className="card-grid fade-in-up fade-in-up-1">

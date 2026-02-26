@@ -543,6 +543,11 @@ a:hover {
   flex-shrink: 0;
 }
 
+/* Mobile user section inside hamburger menu — hidden on desktop */
+.navbar-user-mobile {
+  display: none;
+}
+
 .navbar-user .user-name {
   color: var(--text-primary);
   font-weight: 500;
@@ -1566,6 +1571,104 @@ a:hover {
   animation: fadeInUp 0.3s ease-out;
 }
 
+/* ── Task Item Wrap (for submission area) ── */
+.task-item-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.task-item-wrap .task-item {
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.task-item-wrap:last-child .task-item,
+.task-item-wrap:not(:has(.submission-area)) .task-item {
+  border-radius: var(--radius-sm);
+}
+
+/* ── Submission Area ─────────────────────── */
+.submission-area {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  padding: 14px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.submission-existing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+
+.submission-label {
+  color: var(--text-muted);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.submission-link {
+  color: var(--accent);
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.submission-link:hover {
+  color: var(--accent-dark);
+  text-decoration: underline;
+}
+
+.submission-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.submission-input {
+  flex: 1;
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xs);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  transition: var(--transition);
+  outline: none;
+  min-width: 0;
+}
+
+.submission-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.submission-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ── Admin Submission Link Inline ────────── */
+.submission-link-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent);
+  font-size: 12px;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.submission-link-inline:hover {
+  color: var(--accent-dark);
+  text-decoration: underline;
+}
+
 /* ── Stagger Animations ─────────────────── */
 .card-grid>* {
   animation: fadeInUp 0.4s ease-out both;
@@ -1661,14 +1764,36 @@ a:hover {
     border-radius: var(--radius-xs);
   }
 
-  .navbar-user {
-    order: 2;
-    gap: 8px;
-    padding: 16px 0;
+  /* Hide desktop user section on mobile */
+  .navbar-user-desktop {
+    display: none;
   }
 
-  .navbar-user .user-name {
-    display: none;
+  /* Show mobile user section inside hamburger */
+  .navbar-user-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+  }
+
+  .user-mobile-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .user-mobile-info .user-name {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 14px;
+  }
+
+  .navbar-user-mobile .btn {
+    width: 100%;
+    justify-content: center;
   }
 
   /* ── Main Content ───────────────────── */
@@ -1811,10 +1936,61 @@ a:hover {
   .task-item {
     padding: 14px 16px;
     gap: 12px;
+    flex-wrap: wrap;
   }
 
   .task-item .task-title {
     font-size: 13px;
+  }
+
+  .task-item .task-info {
+    flex: 1 1 100%;
+    order: 2;
+  }
+
+  .task-item .task-check {
+    order: 1;
+  }
+
+  .task-item .btn {
+    order: 3;
+  }
+
+  /* ── Submission Area Mobile ──────────── */
+  .submission-area {
+    padding: 12px 16px;
+  }
+
+  .submission-input-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .submission-input-row .btn {
+    width: 100%;
+  }
+
+  .submission-existing {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  /* ── Page Header Mobile ──────────────── */
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .page-header>div {
+    width: 100%;
+  }
+
+  .page-header>div[style] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   /* ── Chip Group ─────────────────────── */
@@ -1827,6 +2003,15 @@ a:hover {
   .section-header {
     flex-wrap: wrap;
     gap: 12px;
+  }
+
+  /* ── Card Meta Mobile ────────────────── */
+  .card-meta {
+    gap: 8px;
+  }
+
+  .card-meta span {
+    font-size: 11px;
   }
 }
 

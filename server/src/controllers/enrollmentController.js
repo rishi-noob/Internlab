@@ -110,7 +110,11 @@ const getMyEnrollments = async (req, res) => {
         const enrollments = await prisma.enrollment.findMany({
             where: { userId: req.user.id },
             include: {
-                program: true,
+                program: {
+                    include: {
+                        _count: { select: { Task: true } }
+                    }
+                },
                 UserProgress: {
                     include: { task: true }
                 }

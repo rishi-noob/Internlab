@@ -4,7 +4,8 @@ const {
     markTaskComplete,
     getEnrollmentProgress,
     gradeSubmission,
-    getProgressStats
+    getProgressStats,
+    submitWork
 } = require('../controllers/progressController');
 const { authenticate, authorize } = require('../middleware/auth');
 
@@ -18,6 +19,13 @@ router.post(
     '/:taskId/complete',
     authenticate,
     markTaskComplete
+);
+
+// Submit work link for a task without marking complete (Intern)
+router.post(
+    '/:taskId/submit',
+    authenticate,
+    submitWork
 );
 
 // Grade a submission (Mentor/Admin)

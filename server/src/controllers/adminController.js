@@ -55,7 +55,12 @@ const getInternById = async (req, res) => {
                 Enrollment: {
                     include: {
                         program: {
-                            select: { id: true, title: true, domain: true, durationDays: true }
+                            include: {
+                                Task: {
+                                    select: { id: true, title: true, type: true, orderIndex: true },
+                                    orderBy: { orderIndex: 'asc' }
+                                }
+                            }
                         },
                         UserProgress: {
                             include: {

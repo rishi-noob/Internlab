@@ -51,6 +51,21 @@ const createTask = async (req, res) => {
             },
         });
 
+        // Auto-create UserProgress for all existing enrollments in this program
+        const activeEnrollments = await prisma.enrollment.findMany({
+            where: { programId, status: { in: ['ACTIVE', 'EXTENDED'] } }
+        });
+
+        if (activeEnrollments.length > 0) {
+            await prisma.userProgress.createMany({
+                data: activeEnrollments.map(enr => ({
+                    enrollmentId: enr.id,
+                    taskId: task.id,
+                    status: 'NOT_STARTED'
+                }))
+            });
+        }
+
         res.status(201).json(task);
     } catch (error) {
         console.error(error);

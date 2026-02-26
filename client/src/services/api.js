@@ -44,6 +44,7 @@ export const api = {
 
     // Progress
     markComplete: (taskId, submissionUrl) => request(`/progress/${taskId}/complete`, { method: 'POST', body: JSON.stringify({ submissionUrl }) }),
+    submitWork: (taskId, submissionUrl) => request(`/progress/${taskId}/submit`, { method: 'POST', body: JSON.stringify({ submissionUrl }) }),
     getProgress: (enrollmentId) => request(`/progress/enrollment/${enrollmentId}`),
     getStats: () => request('/progress/stats'),
 

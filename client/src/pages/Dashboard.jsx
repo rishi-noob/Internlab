@@ -137,7 +137,7 @@ export default function Dashboard() {
                         <div className="card-grid">
                             {enrollments.map(enr => {
                                 const completed = enr.UserProgress?.filter(p => p.status === 'COMPLETED').length || 0;
-                                const total = enr.UserProgress?.length || 0;
+                                const total = enr.program?._count?.Task || enr.UserProgress?.length || 0;
                                 const pct = total === 0 ? 0 : Math.round((completed / total) * 100);
                                 return (
                                     <div key={enr.id} className="card" onClick={() => navigate(`/programs/${enr.programId}`)}>

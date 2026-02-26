@@ -16,6 +16,7 @@ export default function Navbar() {
 
     const roleClass = user?.role?.toLowerCase() || 'intern';
     const isAdmin = user?.role === 'ADMIN';
+    const isIntern = user?.role === 'INTERN';
 
     return (
         <nav className="navbar">
@@ -36,12 +37,20 @@ export default function Navbar() {
 
             <div className={`navbar-links ${menuOpen ? 'open' : ''}`}>
                 <NavLink to="/dashboard" onClick={closeMenu}>Dashboard</NavLink>
-                <NavLink to="/programs" onClick={closeMenu}>Programs</NavLink>
+                {!isIntern && <NavLink to="/programs" onClick={closeMenu}>Programs</NavLink>}
                 {isAdmin && <NavLink to="/admin/students" onClick={closeMenu}>Students</NavLink>}
                 {isAdmin && <NavLink to="/admin/resources" onClick={closeMenu}>Resources</NavLink>}
+                {/* Mobile-only: user info inside hamburger menu */}
+                <div className="navbar-user-mobile">
+                    <div className="user-mobile-info">
+                        <span className="user-name">{user?.name}</span>
+                        <span className={`role-badge ${roleClass}`}>{user?.role}</span>
+                    </div>
+                    <button className="btn btn-ghost btn-sm" onClick={() => { handleLogout(); closeMenu(); }}>Logout</button>
+                </div>
             </div>
 
-            <div className="navbar-user">
+            <div className="navbar-user navbar-user-desktop">
                 <span className="user-name">{user?.name}</span>
                 <span className={`role-badge ${roleClass}`}>{user?.role}</span>
                 <button className="btn btn-ghost btn-sm" onClick={handleLogout}>Logout</button>
