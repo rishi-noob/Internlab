@@ -1,4 +1,9 @@
-const API_BASE = '/api';
+const API_BASE =
+    import.meta.env.VITE_API_URL ||
+    // Fallback for deployed frontend if env var is missing
+    (typeof window !== 'undefined' && window.location.hostname === 'internlabtoe.vercel.app'
+        ? 'https://intern-lab-server1.onrender.com/api'
+        : '/api');
 
 function getHeaders() {
     const token = localStorage.getItem('token');
@@ -12,7 +17,29 @@ async function request(url, options = {}) {
         ...options,
         headers: { ...getHeaders(), ...options.headers },
     });
-    const data = await res.json();
+    const text = await res.text();
+    const contentType = res.headers.get('content-type') || '';
+    let data = {};
+
+    if (text) {
+        if (contentType.includes('application/json')) {
+            try {
+                data = JSON.parse(text);
+            } catch {
+                throw {
+                    status: res.status,
+                    message: 'Server returned invalid JSON. Please try again or contact support.',
+                };
+            }
+        } else {
+            // Non‑JSON response (likely an HTML error page from the hosting provider)
+            throw {
+                status: res.status,
+                message: text.slice(0, 200) || 'Server returned a non‑JSON response.',
+            };
+        }
+    }
+
     if (!res.ok) throw { status: res.status, ...data };
     return data;
 }
