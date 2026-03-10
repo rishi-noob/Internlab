@@ -24,7 +24,8 @@ model User {
   CreatedTasks     Task[]       @relation("TaskCreator")
   CreatedPrograms  Program[]    @relation("ProgramCreator")
   CreatedResources Resource[]   @relation("ResourceCreator")
-  CreatedInvites   InviteCode[] @relation("InviteCreator")
+  CreatedInvites        InviteCode[]   @relation("InviteCreator")
+  CreatedAnnouncements  Announcement[] @relation("AnnouncementCreator")
 }
 
 model Program {
@@ -113,5 +114,15 @@ model InviteCode {
   createdBy   User     @relation("InviteCreator", fields: [createdById], references: [id])
   expiresAt   DateTime
   used        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model Announcement {
+  id          String   @id @default(uuid())
+  title       String
+  content     String
+  type        String   @default("GENERAL")
+  createdById String
+  createdBy   User     @relation("AnnouncementCreator", fields: [createdById], references: [id])
   createdAt   DateTime @default(now())
 }

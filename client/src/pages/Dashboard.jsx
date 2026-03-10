@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -8,42 +8,43 @@ export default function Dashboard() {
     const navigate = useNavigate();
     const [stats, setStats] = useState(null);
     const [enrollments, setEnrollments] = useState([]);
-    const [resources, setResources] = useState([]);
     const [programs, setPrograms] = useState([]);
     const [showJoinModal, setShowJoinModal] = useState(false);
     const [joinCode, setJoinCode] = useState('');
     const [joinError, setJoinError] = useState('');
     const [joining, setJoining] = useState(false);
 
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    async function loadData() {
+    const loadData = useCallback(async () => {
         try {
-            const progs = await api.getPrograms();
-            setPrograms(progs);
-
-            // Load resources for all users
-            try {
-                const res = await api.getResources();
-                setResources(res);
-            } catch (e) { /* resources might not be loaded yet */ }
+            if (user.role === 'ADMIN' || user.role === 'MENTOR') {
+                const progs = await api.getPrograms();
+                setPrograms(progs);
+            }
 
             if (user.role === 'ADMIN') {
                 try {
                     const s = await api.getAdminStats();
                     setStats(s);
                 } catch (e) {
-                    console.error(e);
+                    console.error('Failed to load admin stats:', e);
                 }
             }
             if (user.role === 'INTERN') {
-                const enr = await api.getMyEnrollments();
-                setEnrollments(enr);
+                try {
+                    const enr = await api.getMyEnrollments();
+                    setEnrollments(enr);
+                } catch (e) {
+                    console.error('Failed to load enrollments:', e);
+                }
             }
-        } catch (e) { console.error(e); }
-    }
+        } catch (e) {
+            console.error('Failed to load dashboard data:', e);
+        }
+    }, [user.role]);
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
 
     const handleEnroll = async () => {
         if (!joinCode.trim()) return;
@@ -155,33 +156,6 @@ export default function Dashboard() {
                             })}
                         </div>
                     )}
-                </div>
-            )}
-
-            {/* Resources Section */}
-            {resources.length > 0 && (
-                <div className="fade-in-up fade-in-up-3" style={{ marginTop: 28 }}>
-                    <div className="section-header">
-                        <h2>
-                            <span className="section-icon">📖</span>
-                            Resources & Articles
-                        </h2>
-                        <span className="count-badge">{resources.length}</span>
-                    </div>
-                    <div className="resources-grid">
-                        {resources.map(r => (
-                            <a key={r.id} href={r.url} target="_blank" rel="noopener noreferrer" className="resource-card">
-                                <div className="resource-icon">
-                                    {r.category === 'Video' ? '🎬' : r.category === 'Tool' ? '🛠️' : '📄'}
-                                </div>
-                                <div className="resource-info">
-                                    <div className="resource-title">{r.title}</div>
-                                    {r.description && <div className="resource-desc">{r.description}</div>}
-                                    {r.category && <div className="resource-category">{r.category}</div>}
-                                </div>
-                            </a>
-                        ))}
-                    </div>
                 </div>
             )}
 

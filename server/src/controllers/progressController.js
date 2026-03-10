@@ -7,11 +7,16 @@ const prisma = require('../config/db');
 const markTaskComplete = async (req, res) => {
     try {
         const { taskId } = req.params;
-        const { submissionUrl } = req.body; // optional e.g. for quiz or code submission link
+        const { submissionUrl } = req.body;
 
         // Find the user's active enrollment for the program containing this task
         const task = await prisma.task.findUnique({ where: { id: taskId } });
         if (!task) return res.status(404).json({ message: 'Task not found' });
+
+        // For QUIZ/assignment tasks, submission URL is mandatory
+        if (task.type === 'QUIZ' && (!submissionUrl || !submissionUrl.trim())) {
+            return res.status(400).json({ message: 'Submission link is required for assignment tasks. Please submit your work before marking as complete.' });
+        }
 
         const enrollment = await prisma.enrollment.findFirst({
             where: {

@@ -117,6 +117,9 @@ const deleteTask = async (req, res) => {
             return res.status(404).json({ message: 'Task not found' });
         }
 
+        // Delete related UserProgress records first (FK constraint)
+        await prisma.userProgress.deleteMany({ where: { taskId: req.params.id } });
+
         await prisma.task.delete({ where: { id: req.params.id } });
 
         res.json({ message: 'Task removed successfully' });

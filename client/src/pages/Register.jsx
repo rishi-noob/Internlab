@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const INTEREST_OPTIONS = [
-    'Web Development', 'Mobile Dev', 'AI / ML', 'Data Science',
-    'UI/UX Design', 'Cloud & DevOps', 'Cybersecurity', 'Blockchain',
-    'IoT', 'Game Dev', 'Backend', 'Frontend'
+    'Content Creation',
+    'Core Research & Development',
+    'Founder Office Intern',
+    'On Ground Activities (Plantation, Clean Up, Visits)',
+    'Public Relation & Communication'
 ];
 
 export default function Register() {
@@ -101,7 +103,7 @@ export default function Register() {
 
 
                     <div className="form-group">
-                        <label>Your Interests</label>
+                        <label>Domain & Interest</label>
                         <div className="chip-group">
                             {INTEREST_OPTIONS.map(interest => (
                                 <span

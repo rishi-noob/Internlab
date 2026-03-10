@@ -10,10 +10,32 @@ function getHeaders() {
 }
 
 async function request(url, options = {}) {
-    const res = await fetch(`${API_BASE}${url}`, {
-        ...options,
-        headers: { ...getHeaders(), ...options.headers },
-    });
+    let res;
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
+        res = await fetch(`${API_BASE}${url}`, {
+            ...options,
+            headers: { ...getHeaders(), ...options.headers },
+            signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+    } catch (err) {
+        // Network error, timeout, or server unreachable
+        if (err.name === 'AbortError') {
+            throw {
+                status: 0,
+                message: 'Request timed out. Please check your connection and try again.',
+            };
+        }
+        throw {
+            status: 0,
+            message: 'Unable to connect to server. Please check your internet connection and try again.',
+        };
+    }
+
     const text = await res.text();
     const contentType = res.headers.get('content-type') || '';
     let data = {};
@@ -29,10 +51,10 @@ async function request(url, options = {}) {
                 };
             }
         } else {
-            // Non‑JSON response (likely an HTML error page from the hosting provider)
+            // Non-JSON response (likely an HTML error page from the hosting provider)
             throw {
                 status: res.status,
-                message: text.slice(0, 200) || 'Server returned a non‑JSON response.',
+                message: text.slice(0, 200) || 'Server returned a non-JSON response.',
             };
         }
     }
@@ -75,15 +97,20 @@ export const api = {
     // Invite
     generateInvite: (programId) => request('/auth/invite', { method: 'POST', body: JSON.stringify({ programId }) }),
 
-    // Resources (NEW)
+    // Resources
     getResources: () => request('/resources'),
     createResource: (body) => request('/resources', { method: 'POST', body: JSON.stringify(body) }),
     deleteResource: (id) => request(`/resources/${id}`, { method: 'DELETE' }),
 
-    // Admin (NEW)
+    // Admin
     getInterns: () => request('/admin/interns'),
     getIntern: (id) => request(`/admin/interns/${id}`),
     getAdminStats: () => request('/admin/stats'),
+
+    // Announcements
+    getAnnouncements: () => request('/announcements'),
+    createAnnouncement: (body) => request('/announcements', { method: 'POST', body: JSON.stringify(body) }),
+    deleteAnnouncement: (id) => request(`/announcements/${id}`, { method: 'DELETE' }),
 };
 
 export default api;

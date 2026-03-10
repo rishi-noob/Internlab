@@ -54,7 +54,12 @@ export default function ProgramDetail() {
         } catch (err) { alert(err.message || 'Failed to create task'); }
     };
 
-    const handleMarkComplete = async (taskId) => {
+    const handleMarkComplete = async (taskId, taskType) => {
+        // For QUIZ tasks, require submission URL before marking complete
+        if (taskType === 'QUIZ' && (!submissionUrls[taskId] || !submissionUrls[taskId].trim())) {
+            alert('Please submit your assignment link before marking this task as complete.');
+            return;
+        }
         try {
             await api.markComplete(taskId, submissionUrls[taskId] || undefined);
             loadProgram();
@@ -157,13 +162,15 @@ export default function ProgramDetail() {
                             const isCompleted = taskProgress?.status === 'COMPLETED';
                             const isAssignment = task.type === 'QUIZ';
                             const existingUrl = taskProgress?.submissionUrl;
+                            const needsLink = isAssignment && !submissionUrls[task.id]?.trim() && !existingUrl;
                             return (
                                 <div key={task.id} className="task-item-wrap">
                                     <div className="task-item">
                                         {user.role === 'INTERN' && enrollment && (
                                             <div
-                                                className={`task-check ${isCompleted ? 'completed' : ''}`}
-                                                onClick={() => !isCompleted && handleMarkComplete(task.id)}
+                                                className={`task-check ${isCompleted ? 'completed' : ''} ${needsLink ? 'disabled' : ''}`}
+                                                onClick={() => !isCompleted && handleMarkComplete(task.id, task.type)}
+                                                title={needsLink ? 'Submit your assignment link first' : ''}
                                             />
                                         )}
                                         <div className="task-info">

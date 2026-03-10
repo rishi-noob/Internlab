@@ -965,6 +965,13 @@ a:hover {
   font-weight: 700;
 }
 
+.task-item .task-check.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: var(--border);
+  border-style: dashed;
+}
+
 .task-item .task-info {
   flex: 1;
   min-width: 0;
@@ -2074,5 +2081,256 @@ a:hover {
 
   .navbar {
     padding: 0 12px;
+  }
+}
+
+/* ── Announcements ────────────────────────── */
+.announcement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.announcement-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 20px 24px;
+  border-left: 4px solid var(--accent);
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.announcement-card:hover {
+  border-color: var(--border-light);
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
+}
+
+.announcement-card.announcement-event {
+  border-left-color: #10b981;
+}
+
+.announcement-card.announcement-meeting {
+  border-left-color: #3b82f6;
+}
+
+.announcement-card.announcement-urgent {
+  border-left-color: #ef4444;
+}
+
+.announcement-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.announcement-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--accent-glow);
+  color: var(--accent);
+}
+
+.announcement-event .announcement-type-badge {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.announcement-meeting .announcement-type-badge {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.announcement-urgent .announcement-type-badge {
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+}
+
+.announcement-time {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.announcement-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+}
+
+.announcement-content {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.announcement-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.announcement-author {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+@media (max-width: 600px) {
+  .announcement-card {
+    padding: 16px 18px;
+  }
+
+  .announcement-title {
+    font-size: 14px;
+  }
+
+  .announcement-content {
+    font-size: 13px;
+  }
+}
+
+/* ── Clickable Announcement Cards ───────────── */
+.announcement-clickable {
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.announcement-clickable:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.announcement-clickable:active {
+  transform: translateY(-1px);
+}
+
+.announcement-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.announcement-read-more {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* ── Announcement Detail Modal ──────────────── */
+.announcement-detail-modal {
+  max-width: 560px;
+  width: 100%;
+  position: relative;
+  padding: 36px;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+}
+
+.modal-close-btn:hover {
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--danger);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.announcement-detail-header {
+  margin-bottom: 16px;
+}
+
+.announcement-badge-general {
+  background: var(--accent-glow);
+  color: var(--accent);
+}
+
+.announcement-badge-event {
+  background: rgba(16, 185, 129, 0.08);
+  color: #10b981;
+}
+
+.announcement-badge-meeting {
+  background: rgba(59, 130, 246, 0.08);
+  color: #3b82f6;
+}
+
+.announcement-badge-urgent {
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+}
+
+.announcement-detail-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.announcement-detail-meta {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: var(--text-muted);
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.announcement-detail-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.announcement-detail-content {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  white-space: pre-wrap;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 600px) {
+  .announcement-detail-modal {
+    padding: 24px 20px;
+    max-width: 100%;
+    margin: 0 12px;
+  }
+
+  .announcement-detail-title {
+    font-size: 18px;
+  }
+
+  .announcement-detail-meta {
+    flex-direction: column;
+    gap: 8px;
   }
 }

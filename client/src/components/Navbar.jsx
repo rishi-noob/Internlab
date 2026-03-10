@@ -39,7 +39,19 @@ export default function Navbar() {
                 <NavLink to="/dashboard" onClick={closeMenu}>Dashboard</NavLink>
                 {!isIntern && <NavLink to="/programs" onClick={closeMenu}>Programs</NavLink>}
                 {isAdmin && <NavLink to="/admin/students" onClick={closeMenu}>Students</NavLink>}
-                {isAdmin && <NavLink to="/admin/resources" onClick={closeMenu}>Resources</NavLink>}
+
+                {/* Announcements — visible to all users, different routes for admin vs intern */}
+                {isAdmin
+                    ? <NavLink to="/admin/announcements" onClick={closeMenu}>Announcements</NavLink>
+                    : <NavLink to="/announcements" onClick={closeMenu}>Announcements</NavLink>
+                }
+
+                {/* Resources — visible to all users, different routes for admin vs intern */}
+                {isAdmin
+                    ? <NavLink to="/admin/resources" onClick={closeMenu}>Resources</NavLink>
+                    : <NavLink to="/resources" onClick={closeMenu}>Resources</NavLink>
+                }
+
                 {/* Mobile-only: user info inside hamburger menu */}
                 <div className="navbar-user-mobile">
                     <div className="user-mobile-info">
