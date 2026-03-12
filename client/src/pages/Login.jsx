@@ -1,9 +1,14 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
     const { login } = useAuth();
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const isVerified = queryParams.get('verified') === 'true';
+    const isInvalidToken = queryParams.get('error') === 'invalid_token';
+    
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPwd, setShowPwd] = useState(false);
@@ -32,6 +37,8 @@ export default function Login() {
                     <h1>Welcome back</h1>
                     <p className="subtitle">Sign in to your InternLab account</p>
                 </div>
+                {isVerified && <div style={{ padding: '12px', backgroundColor: 'var(--success)', color: 'white', borderRadius: '8px', marginBottom: '16px', textAlign: 'center', fontSize: '0.9rem' }}>✅ Email verified successfully! You can now log in.</div>}
+                {isInvalidToken && <div className="error-msg">❌ Invalid or expired verification link.</div>}
                 {error && <div className="error-msg">{error}</div>}
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">

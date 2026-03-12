@@ -18,6 +18,8 @@ model User {
   college   String?
   duration  Int?
   interests String?
+  verified  Boolean      @default(false)
+  verifyToken String?
   createdAt DateTime     @default(now())
 
   Enrollment       Enrollment[]

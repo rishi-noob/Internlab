@@ -167,4 +167,47 @@ const getAdminStats = async (req, res) => {
     }
 };
 
-module.exports = { getAllInterns, getInternById, getAdminStats };
+// @desc    Delete a student intern and all their related data
+// @route   DELETE /api/admin/interns/:id
+// @access  Private/Admin
+const deleteIntern = async (req, res) => {
+    try {
+        const internId = req.params.id;
+
+        // Check if user exists and is actually an intern
+        const user = await prisma.user.findUnique({ where: { id: internId } });
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        if (user.role !== 'INTERN') return res.status(403).json({ message: 'Can only delete intern accounts' });
+
+        // Safely perform cascading delete inside a transaction to prevent partial orphans
+        await prisma.$transaction(async (tx) => {
+            // First find all enrollments for this user
+            const enrollments = await tx.enrollment.findMany({ where: { userId: internId } });
+            const enrollmentIds = enrollments.map(e => e.id);
+
+            // 1. Delete all UserProgress rows linked to those enrollments
+            if (enrollmentIds.length > 0) {
+                await tx.userProgress.deleteMany({
+                    where: { enrollmentId: { in: enrollmentIds } }
+                });
+            }
+
+            // 2. Delete all Enrollments for the user
+            await tx.enrollment.deleteMany({
+                where: { userId: internId }
+            });
+
+            // 3. Delete the User
+            await tx.user.delete({
+                where: { id: internId }
+            });
+        });
+
+        res.status(200).json({ message: 'Student deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting student:', error);
+        res.status(500).json({ message: 'Server error deleting student.' });
+    }
+};
+
+module.exports = { getAllInterns, getInternById, getAdminStats, deleteIntern };

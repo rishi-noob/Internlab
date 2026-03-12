@@ -5,6 +5,7 @@ const {
     loginUser,
     getMe,
     generateInviteToken,
+    verifyEmail,
 } = require('../controllers/authController');
 const { authenticate, authorize } = require('../middleware/auth');
 
@@ -29,6 +30,9 @@ router.post(
     ],
     loginUser
 );
+
+// Verify email route
+router.get('/verify/:token', verifyEmail);
 
 // Get current user profile (requires auth)
 router.get('/me', authenticate, getMe);

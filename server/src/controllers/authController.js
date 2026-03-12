@@ -2,6 +2,8 @@ const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const prisma = require('../config/db');
 const { generateToken } = require('../config/auth');
+const crypto = require('crypto');
+const sendEmail = require('../utils/sendEmail');
 
 // @desc    Register a new user (with or without invite code)
 // @route   POST /api/auth/register
@@ -29,6 +31,9 @@ const registerUser = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
+        // Generate verification token
+        const verifyToken = crypto.randomBytes(32).toString('hex');
+
         // Create user
         const user = await prisma.user.create({
             data: {
@@ -40,8 +45,38 @@ const registerUser = async (req, res) => {
                 college: college || null,
                 duration: duration ? parseInt(duration) : null,
                 interests: interests || null,
+                verified: false,
+                verifyToken,
             },
         });
+
+        // Send confirmation email
+        // Determine protocol and host (for local dev vs production)
+        const protocol = req.protocol;
+        const host = req.get('host');
+        // The verification URL should point to the backend route or frontend route.
+        // Assuming there isn't a frontend page specific for this, we point directly to the backend API.
+        const verifyUrl = `${protocol}://${host}/api/auth/verify/${verifyToken}`;
+        
+        const message = `
+            <h2>Welcome to Intern Lab!</h2>
+            <p>Please click the link below to verify your email address. You will not be able to log in until your email is verified.</p>
+            <a href="${verifyUrl}" target="_blank">Verify Email</a>
+            <p>If the link above does not work, copy and paste this URL into your browser:</p>
+            <p>${verifyUrl}</p>
+        `;
+
+        try {
+            await sendEmail({
+                email: user.email,
+                subject: 'Intern Lab - Email Verification',
+                message,
+            });
+        } catch (emailErr) {
+            console.error('Error sending verification email:', emailErr);
+            // Optionally, we could delete the user or just leave them unverified. 
+            // We'll leave them unverified.
+        }
 
         let enrolledProgramId = null;
 
@@ -76,16 +111,8 @@ const registerUser = async (req, res) => {
         }
 
         res.status(201).json({
-            id: user.id,
-            name: user.name,
+            message: 'Registration successful. Please verify your email.',
             email: user.email,
-            role: user.role,
-            phone: user.phone,
-            college: user.college,
-            duration: user.duration,
-            interests: user.interests,
-            token: generateToken(user.id, user.role),
-            enrolledProgramId
         });
     } catch (error) {
         console.error(error);
@@ -110,6 +137,10 @@ const loginUser = async (req, res) => {
 
         // Validate password
         if (user && (await bcrypt.compare(password, user.password))) {
+            if (!user.verified) {
+                return res.status(401).json({ message: 'Please verify your email before logging in.' });
+            }
+
             res.json({
                 id: user.id,
                 name: user.name,
@@ -198,9 +229,42 @@ const generateInviteToken = async (req, res) => {
     }
 };
 
+// @desc    Verify user email
+// @route   GET /api/auth/verify/:token
+// @access  Public
+const verifyEmail = async (req, res) => {
+    try {
+        const { token } = req.params;
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+        const user = await prisma.user.findFirst({
+            where: { verifyToken: token },
+        });
+
+        if (!user) {
+            return res.redirect(`${frontendUrl}/login?error=invalid_token`);
+        }
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                verified: true,
+                verifyToken: null,
+            },
+        });
+
+        res.redirect(`${frontendUrl}/login?verified=true`);
+    } catch (error) {
+        console.error(error);
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        res.redirect(`${frontendUrl}/login?error=server_error`);
+    }
+};
+
 module.exports = {
     registerUser,
     loginUser,
     getMe,
     generateInviteToken,
+    verifyEmail,
 };

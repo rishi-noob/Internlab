@@ -6,6 +6,7 @@ import Navbar from './components/Navbar';
 // Lazy-loaded pages for code-splitting / faster initial load
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Programs = lazy(() => import('./pages/Programs'));
 const ProgramDetail = lazy(() => import('./pages/ProgramDetail'));
@@ -49,6 +50,7 @@ function AppRoutes() {
                     <Routes>
                         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
                         <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+                        <Route path="/verify-email" element={<PublicRoute><VerifyEmail /></PublicRoute>} />
                         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
                         <Route path="/programs" element={<PrivateRoute><Programs /></PrivateRoute>} />
                         <Route path="/programs/:id" element={<PrivateRoute><ProgramDetail /></PrivateRoute>} />

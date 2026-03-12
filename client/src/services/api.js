@@ -105,6 +105,7 @@ export const api = {
     // Admin
     getInterns: () => request('/admin/interns'),
     getIntern: (id) => request(`/admin/interns/${id}`),
+    deleteIntern: (id) => request(`/admin/interns/${id}`, { method: 'DELETE' }),
     getAdminStats: () => request('/admin/stats'),
 
     // Announcements

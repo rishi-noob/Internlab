@@ -39,6 +39,22 @@ export default function StudentDetail() {
                     <button className="btn btn-ghost btn-sm" onClick={() => navigate('/admin/students')}>← Back</button>
                     <h1>👤 {student.name}</h1>
                 </div>
+                <button 
+                    className="btn" 
+                    style={{ backgroundColor: 'var(--danger)', color: 'white', borderColor: 'var(--danger)' }}
+                    onClick={async () => {
+                        if (window.confirm(`Are you absolutely sure you want to delete ${student.name}?\n\nThis will permanently remove all their enrollments, progress, and account data.`)) {
+                            try {
+                                await api.deleteIntern(student.id);
+                                navigate('/admin/students');
+                            } catch (err) {
+                                alert(err.message || 'Failed to delete student');
+                            }
+                        }
+                    }}
+                >
+                    🗑️ Delete Student
+                </button>
             </div>
 
             {/* Student Profile Card */}

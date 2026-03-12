@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const INTEREST_OPTIONS = [
@@ -12,6 +12,7 @@ const INTEREST_OPTIONS = [
 
 export default function Register() {
     const { register } = useAuth();
+    const navigate = useNavigate();
     const [form, setForm] = useState({
         name: '', email: '', password: '',
         phone: '', college: '', duration: '30', interests: []
@@ -45,6 +46,8 @@ export default function Register() {
                 duration: parseInt(form.duration) || 30,
                 interests: form.interests.join(', ')
             });
+            // Redirect to verify email page upon success
+            navigate('/verify-email', { state: { email: form.email } });
         } catch (err) {
             setError(err.message || 'Registration failed');
         } finally {
