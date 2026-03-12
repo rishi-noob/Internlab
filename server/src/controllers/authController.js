@@ -70,7 +70,10 @@ const registerUser = async (req, res) => {
                 message,
             });
         } catch (emailErr) {
-            console.error('Error sending verification email:', emailErr);
+            console.error('❌ EMAIL ERROR:', emailErr.message);
+            if (emailErr.code) console.error('Error Code:', emailErr.code);
+            if (emailErr.command) console.error('SMTP Command:', emailErr.command);
+            
             // Critical Fix: Delete the user if email completely fails so they are not permanently locked out
             await prisma.user.delete({ where: { id: user.id } });
             return res.status(500).json({ message: 'Failed to send verification email (Spam filter or invalid address). Please try again or use a different email.' });

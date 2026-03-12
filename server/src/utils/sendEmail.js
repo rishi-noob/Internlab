@@ -13,17 +13,27 @@ const sendEmail = async (options) => {
         return;
     }
 
-    const transporter = nodemailer.createTransport({
+    const transporterOptions = {
         host: process.env.SMTP_HOST,
         port: process.env.SMTP_PORT,
-        secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
+        secure: process.env.SMTP_PORT == 465,
         auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
         },
-        connectionTimeout: 10000, // 10 seconds
-        socketTimeout: 10000,     // 10 seconds
-    });
+        connectionTimeout: 10000,
+        socketTimeout: 10000,
+    };
+
+    // If using Gmail, use the specialized service config for better reliability
+    if (process.env.SMTP_HOST.includes('gmail.com')) {
+        delete transporterOptions.host;
+        delete transporterOptions.port;
+        delete transporterOptions.secure;
+        transporterOptions.service = 'gmail';
+    }
+
+    const transporter = nodemailer.createTransport(transporterOptions);
 
     const message = {
         from: `${process.env.FROM_NAME || 'Intern Lab'} <${process.env.FROM_EMAIL || 'noreply@internlab.com'}>`,
