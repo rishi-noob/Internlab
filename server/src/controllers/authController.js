@@ -45,24 +45,20 @@ const registerUser = async (req, res) => {
                 college: college || null,
                 duration: duration ? parseInt(duration) : null,
                 interests: interests || null,
-                verified: false,
-                verifyToken,
+                verified: true, // Verification disabled: users are verified by default
+                verifyToken: null,
             },
         });
 
-        // Send confirmation email
-        // Use configured BACKEND_URL or fallback to req detection
+        // Email verification skipped as per user request
+        /*
         const backendUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
         const verifyUrl = `${backendUrl}/api/auth/verify/${verifyToken}`;
-        
-        const message = `
-            <h2>Welcome to Intern Lab!</h2>
-            <p>Please click the link below to verify your email address. You will not be able to log in until your email is verified.</p>
-            <a href="${verifyUrl}" target="_blank">Verify Email</a>
-            <p>If the link above does not work, copy and paste this URL into your browser:</p>
-            <p>${verifyUrl}</p>
-        `;
+        ...
+        */
 
+        // Email logic commented out to allow instant registration
+        /*
         try {
             await sendEmail({
                 email: user.email,
@@ -78,6 +74,7 @@ const registerUser = async (req, res) => {
             await prisma.user.delete({ where: { id: user.id } });
             return res.status(500).json({ message: 'Failed to send verification email (Spam filter or invalid address). Please try again or use a different email.' });
         }
+        */
 
         let enrolledProgramId = null;
 
@@ -138,9 +135,10 @@ const loginUser = async (req, res) => {
 
         // Validate password
         if (user && (await bcrypt.compare(password, user.password))) {
-            if (!user.verified) {
-                return res.status(401).json({ message: 'Please verify your email before logging in.' });
-            }
+            // Verification check removed as per user request
+            // if (!user.verified) {
+            //     return res.status(401).json({ message: 'Please verify your email before logging in.' });
+            // }
 
             res.json({
                 id: user.id,
