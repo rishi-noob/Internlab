@@ -1,6 +1,10 @@
 const express = require('express');
 const { body } = require('express-validator');
 const {
+    registerUser,
+    loginUser,
+    getMe,
+    generateInviteToken,
     verifyEmail,
     resendVerificationEmail,
 } = require('../controllers/authController');
