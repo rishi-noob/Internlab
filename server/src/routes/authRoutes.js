@@ -1,11 +1,8 @@
 const express = require('express');
 const { body } = require('express-validator');
 const {
-    registerUser,
-    loginUser,
-    getMe,
-    generateInviteToken,
     verifyEmail,
+    resendVerificationEmail,
 } = require('../controllers/authController');
 const { authenticate, authorize } = require('../middleware/auth');
 
@@ -33,6 +30,9 @@ router.post(
 
 // Verify email route
 router.get('/verify/:token', verifyEmail);
+
+// Resend verification email route
+router.post('/resend-verification', resendVerificationEmail);
 
 // Get current user profile (requires auth)
 router.get('/me', authenticate, getMe);

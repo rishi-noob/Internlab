@@ -51,12 +51,9 @@ const registerUser = async (req, res) => {
         });
 
         // Send confirmation email
-        // Determine protocol and host (for local dev vs production)
-        const protocol = req.protocol;
-        const host = req.get('host');
-        // The verification URL should point to the backend route or frontend route.
-        // Assuming there isn't a frontend page specific for this, we point directly to the backend API.
-        const verifyUrl = `${protocol}://${host}/api/auth/verify/${verifyToken}`;
+        // Use configured BACKEND_URL or fallback to req detection
+        const backendUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
+        const verifyUrl = `${backendUrl}/api/auth/verify/${verifyToken}`;
         
         const message = `
             <h2>Welcome to Intern Lab!</h2>
@@ -262,10 +259,62 @@ const verifyEmail = async (req, res) => {
     }
 };
 
+// @desc    Resend verification email
+// @route   POST /api/auth/resend-verification
+// @access  Public
+const resendVerificationEmail = async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        const user = await prisma.user.findUnique({ where: { email } });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (user.verified) {
+            return res.status(400).json({ message: 'Email is already verified' });
+        }
+
+        // Use existing token or generate a new one
+        const verifyToken = user.verifyToken || crypto.randomBytes(32).toString('hex');
+
+        if (!user.verifyToken) {
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { verifyToken },
+            });
+        }
+
+        const backendUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
+        const verifyUrl = `${backendUrl}/api/auth/verify/${verifyToken}`;
+        
+        const message = `
+            <h2>Verify your Intern Lab account</h2>
+            <p>Please click the link below to verify your email address.</p>
+            <a href="${verifyUrl}" target="_blank">Verify Email</a>
+            <p>If the link above does not work, copy and paste this URL into your browser:</p>
+            <p>${verifyUrl}</p>
+        `;
+
+        await sendEmail({
+            email: user.email,
+            subject: 'Intern Lab - Email Verification',
+            message,
+        });
+
+        res.status(200).json({ message: 'Verification email sent' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error while sending email' });
+    }
+};
+
 module.exports = {
     registerUser,
     loginUser,
     getMe,
     generateInviteToken,
     verifyEmail,
+    resendVerificationEmail,
 };

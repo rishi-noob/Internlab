@@ -5,6 +5,9 @@ require('dotenv').config();
 
 const app = express();
 
+// Enable trust proxy to correctly detect protocol (http/https) behind reverse proxies
+app.set('trust proxy', 1);
+
 // Middleware — CORS must come before helmet
 app.use(cors({
   origin: true,  // Allow all origins (reflects request origin)
