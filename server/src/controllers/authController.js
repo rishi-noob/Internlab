@@ -74,8 +74,9 @@ const registerUser = async (req, res) => {
             });
         } catch (emailErr) {
             console.error('Error sending verification email:', emailErr);
-            // Optionally, we could delete the user or just leave them unverified. 
-            // We'll leave them unverified.
+            // Critical Fix: Delete the user if email completely fails so they are not permanently locked out
+            await prisma.user.delete({ where: { id: user.id } });
+            return res.status(500).json({ message: 'Failed to send verification email (Spam filter or invalid address). Please try again or use a different email.' });
         }
 
         let enrolledProgramId = null;
