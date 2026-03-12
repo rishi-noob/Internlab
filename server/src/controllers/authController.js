@@ -50,31 +50,7 @@ const registerUser = async (req, res) => {
             },
         });
 
-        // Email verification skipped as per user request
-        /*
-        const backendUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
-        const verifyUrl = `${backendUrl}/api/auth/verify/${verifyToken}`;
-        ...
-        */
-
-        // Email logic commented out to allow instant registration
-        /*
-        try {
-            await sendEmail({
-                email: user.email,
-                subject: 'Intern Lab - Email Verification',
-                message,
-            });
-        } catch (emailErr) {
-            console.error('❌ EMAIL ERROR:', emailErr.message);
-            if (emailErr.code) console.error('Error Code:', emailErr.code);
-            if (emailErr.command) console.error('SMTP Command:', emailErr.command);
-            
-            // Critical Fix: Delete the user if email completely fails so they are not permanently locked out
-            await prisma.user.delete({ where: { id: user.id } });
-            return res.status(500).json({ message: 'Failed to send verification email (Spam filter or invalid address). Please try again or use a different email.' });
-        }
-        */
+        // Email verification disabled as per user request
 
         let enrolledProgramId = null;
 
@@ -109,7 +85,7 @@ const registerUser = async (req, res) => {
         }
 
         res.status(201).json({
-            message: 'Registration successful. Please verify your email.',
+            message: 'Registration successful. You can now log in.',
             email: user.email,
         });
     } catch (error) {

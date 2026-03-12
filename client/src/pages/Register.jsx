@@ -46,8 +46,8 @@ export default function Register() {
                 duration: parseInt(form.duration) || 30,
                 interests: form.interests.join(', ')
             });
-            // Redirect to verify email page upon success
-            navigate('/verify-email', { state: { email: form.email } });
+            // Redirect to login page upon success
+            navigate('/login', { state: { registered: true } });
         } catch (err) {
             setError(err.message || 'Registration failed');
         } finally {
